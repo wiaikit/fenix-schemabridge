@@ -5,6 +5,7 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
+    "build": "node tools/build-sites.mjs",
     "test": "node --test",
     "start": "node tools/serve.mjs",
     "demo": "node tools/demo.mjs"

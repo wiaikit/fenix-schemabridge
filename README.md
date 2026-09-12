@@ -2,7 +2,7 @@
 
 SchemaBridge turns small CSV or JSON record sets into a declared set of fields. You choose each source field, output name and type. If a field cannot be converted, the response explains where it failed and returns no partial records.
 
-This folder is a local prototype for the X-Agent Open Innovation idea. It has not been deployed or submitted. It uses no runtime packages, external APIs, model calls, database, payment service or uploaded-file storage.
+This project implements the SchemaBridge idea for X-Agent Open Innovation. Deployment and contest acceptance are separate from the implementation and its local verification. It uses no runtime packages, external APIs, model calls, database, payment service or uploaded-file storage.
 
 ## Run locally
 
@@ -136,6 +136,12 @@ node tools/workerd-smoke.mjs http://127.0.0.1:8789
 The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfigured health/proof routes. Stop Wrangler with Ctrl+C after testing. Generated `.wrangler` files, local environment files and dependency directories are excluded by `.gitignore`; they are not submission source.
 
 ## File guide
+
+### Sites hosting output
+
+`npm run build` copies the unchanged Worker modules into `dist/server/` and the registered Site manifest into `dist/.openai/hosting.json`. The entry is `dist/server/index.js`; the build adds no runtime dependencies. Configure `REVIEW_COMMIT` and `PROJECT_SLUG` through the hosting service, using the actual source revision being deployed. Generated output and local credentials are not source files.
+
+A private hosted URL is useful for owner review but cannot establish the unauthenticated public access required by the competition. Verify the actual audience and public endpoint responses before submitting it.
 
 - `src/transform.mjs`: schema checks, CSV parser and conversion logic.
 - `src/worker.mjs`: bounded HTTP body reading, route handling and commit responses.
