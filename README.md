@@ -29,7 +29,8 @@ The example returns two records. Tea has quantity `7` and availability `true`; c
 
 | Method and path | Purpose |
 |---|---|
-| `GET /` and `GET /v1` | Read the service description, capability method/path and documentation links. |
+| `GET /` | Open the Russian/English homepage and run an editable CSV example. |
+| `GET /v1` | Read the JSON API description, capability method/path and documentation links. |
 | `POST /v1/transform` | Convert in-body records using the supplied schema. |
 | `GET /health` | Report a configured reviewed source commit, or HTTP 503 when missing/invalid. |
 | `GET /.well-known/xagent-verification.json` | Report the configured project slug and source commit, or HTTP 503. |
@@ -138,9 +139,9 @@ The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfig
 
 ## Cloudflare deployment
 
-The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The service exposes JSON responses, not a graphical data editor. Its [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json) use the same Cloudflare custom domain.
+The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The homepage explains the service and offers a live CSV example in Russian and English. The example uses four fixed mappings; edit its CSV and run it to see the actual API response as a table. A general schema editor is not included. The API endpoints continue to return JSON. Its [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json) use the same Cloudflare custom domain.
 
-`npm run build` uses the pinned official Wrangler 4.131.1 package to bundle the three Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
+`npm run build` uses the pinned official Wrangler 4.131.1 package to bundle the Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
 
 The production configuration binds only `schemabridge.wiaikit.com`; the existing root website and other account projects are separate. For an independent deployment, choose your own Worker name and replace the custom domain in `wrangler.jsonc` with a domain you control, or remove `routes` to use your own `workers.dev` address. Review and commit your resulting source before publishing.
 
@@ -159,6 +160,7 @@ Supply both variables on every release: dashboard-only values can be overwritten
 
 The public API has no application authentication or per-client rate limiter. It accepts only bounded, in-memory transformations: no outbound fetches, code execution or persistence. Request limits do not establish service capacity or continuous availability. The application does not log request bodies; provider transport logs and their retention are governed by the hosting provider and have not been independently audited. Use synthetic or non-sensitive data for evaluation.
 
+- `src/homepage.mjs`: accessible homepage, local stylesheet and browser script; all demo requests use the same API origin.
 - `src/transform.mjs`: schema checks, CSV parser and conversion logic.
 - `src/worker.mjs`: bounded HTTP body reading, route handling and commit responses.
 - `src/openapi.mjs`: the API description served by the Worker.

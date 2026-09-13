@@ -1,5 +1,9 @@
 # Verification
 
+## Human-readable homepage — 13 September 2026
+
+The root route now serves a Russian/English HTML page with a live editable CSV example. The machine-readable index remains at /v1. Two local asset routes serve CSS and JavaScript with a Content Security Policy that permits only same-origin scripts, styles and API requests; no inline scripts or third-party dependencies are required. The transformation implementation is unchanged. Fresh browser and deployment checks are recorded separately after publishing this new reviewed revision; earlier HTTP counts below describe earlier revisions.
+
 ## Cloudflare migration — 13 September 2026
 
 The deployment target is Cloudflare Workers at schemabridge.wiaikit.com. The build uses pinned Wrangler 4.131.1 in dry-run mode; the former hosting adapter and project manifest have been removed. The transformation and HTTP implementation are unchanged by this migration. Public checks for the new deployment are recorded separately with the resulting real Git SHA, Cloudflare version and timestamps; the historical local results below are not cloud-deployment evidence.

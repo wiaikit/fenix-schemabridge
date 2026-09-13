@@ -272,7 +272,7 @@ test('configured proof routes preserve the supplied SHA and exact X-Agent shapes
 });
 
 test('methods, unknown routes and OpenAPI are explicit', async () => {
-  for (const path of ['/', '/v1', '/health', '/.well-known/xagent-verification.json', '/openapi.json']) {
+  for (const path of ['/', '/assets/app.css', '/assets/app.js', '/v1', '/health', '/.well-known/xagent-verification.json', '/openapi.json']) {
     const response = await worker.fetch(new Request(`http://localhost${path}`, { method: 'POST' }));
     assert.equal(response.status, 405);
     assert.equal(response.headers.get('allow'), 'GET');
@@ -286,13 +286,39 @@ test('methods, unknown routes and OpenAPI are explicit', async () => {
   const document = await response.json();
   assert.equal(document.openapi, '3.1.0');
   assert.deepEqual(Object.keys(document.paths).sort(), ['/', '/v1', '/.well-known/xagent-verification.json', '/health', '/openapi.json', '/v1/transform'].sort());
-  for (const path of ['/', '/v1']) {
+  for (const path of ['/v1']) {
     const index = await worker.fetch(new Request(`http://localhost${path}`));
     assert.equal(index.status, 200);
     const body = await index.json();
     assert.deepEqual(body.capability, { method: 'POST', path: '/v1/transform', contentType: 'application/json' });
     assert.deepEqual(body.limits, { requestBytes: 32768, records: 100 });
     assert.equal(body.documentation, '/openapi.json');
+  }
+});
+
+test('homepage and its local assets are served as a restricted browser interface', async () => {
+  const response = await worker.fetch(new Request('http://localhost/'));
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /^text\/html;/);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const csp = response.headers.get('content-security-policy');
+  assert.match(csp, /script-src 'self'/);
+  assert.match(csp, /connect-src 'self'/);
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
+  const html = await response.text();
+  assert.match(html, /lang="ru"/);
+  assert.match(html, /<main[\s>]/);
+  assert.match(html, /<textarea[\s>]/);
+  assert.match(html, /src="\/assets\/app\.js"/);
+  assert.match(html, /href="\/assets\/app\.css"/);
+  assert.doesNotMatch(html, /<script(?![^>]*src=)[^>]*>|\sonclick=|chatgpt\.site/i);
+  for (const [path, type] of [['/assets/app.css', 'text/css'], ['/assets/app.js', 'text/javascript']]) {
+    const asset = await worker.fetch(new Request(`http://localhost${path}`));
+    assert.equal(asset.status, 200);
+    assert.ok(asset.headers.get('content-type').startsWith(type));
+    assert.equal(asset.headers.get('x-content-type-options'), 'nosniff');
+    assert.ok((await asset.text()).length > 0);
   }
 });
 

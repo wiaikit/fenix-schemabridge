@@ -1,12 +1,24 @@
 import { ApiError, LIMITS, transform } from './transform.mjs';
 import { openapi } from './openapi.mjs';
+import { homepageHtml, homepageCss, homepageJs } from './homepage.mjs';
 
 const encoder = new TextEncoder();
 const routes = new Map([
   ['/', 'GET'], ['/v1', 'GET'],
+  ['/assets/app.css', 'GET'], ['/assets/app.js', 'GET'],
   ['/v1/transform', 'POST'], ['/health', 'GET'],
   ['/.well-known/xagent-verification.json', 'GET'], ['/openapi.json', 'GET'],
 ]);
+
+function pageAsset(body, contentType) {
+  return new Response(body, { headers: {
+    'content-type': contentType,
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff',
+    'referrer-policy': 'no-referrer',
+    'content-security-policy': "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  } });
+}
 
 function json(value, status = 200, headers = {}) {
   const body = JSON.stringify(value);
@@ -72,7 +84,10 @@ export default {
       const method = routes.get(path);
       if (!method) return json({ ok: false, error: { code: 'NOT_FOUND', message: 'Unknown API route.' } }, 404);
       if (request.method !== method) return json({ ok: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Unsupported HTTP method.' } }, 405, { allow: method });
-      if (path === '/' || path === '/v1') {
+      if (path === '/') return pageAsset(homepageHtml, 'text/html; charset=utf-8');
+      if (path === '/assets/app.css') return pageAsset(homepageCss, 'text/css; charset=utf-8');
+      if (path === '/assets/app.js') return pageAsset(homepageJs, 'text/javascript; charset=utf-8');
+      if (path === '/v1') {
         return json({ name: 'SchemaBridge', version: '0.1.0',
           description: 'Map small CSV or JSON record sets to explicit field names and types.',
           capability: { method: 'POST', path: '/v1/transform', contentType: 'application/json' },
