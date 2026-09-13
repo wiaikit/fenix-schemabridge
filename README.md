@@ -121,7 +121,7 @@ The required health/proof shapes and source package above follow the [official s
 
 ## Test in the local Workers runtime
 
-`wrangler.jsonc` is a configuration starting point for Cloudflare Workers. The runtime entry uses standard Worker Request/Response APIs; the Node-only files under `tools/` and `test/` are not imported by it. On 12 September, the official Wrangler **4.131.1** ran this entry in local workerd and passed **29 HTTP smoke checks**. No runtime compatibility fix was needed. Cloudflare Free's **10 ms CPU limit**, public accessibility, account setup, continuous availability, contest eligibility and any payout remain unverified. Local request timings do not measure Workers CPU time. [Cloudflare limits](https://developers.cloudflare.com/workers/platform/limits/).
+`wrangler.jsonc` is a configuration starting point for Cloudflare Workers. The runtime entry uses standard Worker Request/Response APIs; the Node-only files under `tools/` and `test/` are not imported by it. On 12 September, the official Wrangler **4.131.1** ran this entry in local workerd and passed **29 HTTP smoke checks**. No runtime compatibility fix was needed. Cloudflare Free's **10 ms CPU limit**, continuous availability, contest eligibility and any payout require separate verification; successful local checks do not establish them. Local request timings do not measure Workers CPU time. [Cloudflare limits](https://developers.cloudflare.com/workers/platform/limits/).
 
 To repeat the local workerd check, start the pinned CLI in one terminal, then run the smoke script in another. These commands use the local runtime with remote bindings disabled; no login or public deployment is needed. The first command may download the official npm package to the npm cache. Confirm the two selected ports are free before starting.
 
@@ -136,15 +136,26 @@ node tools/workerd-smoke.mjs http://127.0.0.1:8789
 
 The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfigured health/proof routes. Stop Wrangler with Ctrl+C after testing. Generated `.wrangler` files, local environment files and dependency directories are excluded by `.gitignore`; they are not submission source.
 
+## Cloudflare deployment
+
+The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The service exposes JSON responses, not a graphical data editor. Its [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json) use the same Cloudflare custom domain.
+
+`npm run build` uses the pinned official Wrangler 4.131.1 package to bundle the three Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
+
+The production configuration binds only `schemabridge.wiaikit.com`; the existing root website and other account projects are separate. For an independent deployment, choose your own Worker name and replace the custom domain in `wrangler.jsonc` with a domain you control, or remove `routes` to use your own `workers.dev` address. Review and commit your resulting source before publishing.
+
+Authenticate the official Wrangler CLI in your own account. With the reviewed checkout clean, deploy from PowerShell as follows. `CLOUDFLARE_ACCOUNT_ID` must identify the intended account; credentials belong in Wrangler's supported credential store or a private environment variable, never in source.
+
+```powershell
+$reviewCommit = (git rev-parse --verify 'HEAD^{commit}').Trim()
+if (git status --porcelain) { throw 'Commit reviewed changes before deploying.' }
+$env:WRANGLER_SEND_METRICS = 'false'
+npm.cmd exec --yes --package=wrangler@4.131.1 -- wrangler deploy --var "REVIEW_COMMIT:$reviewCommit" --var 'PROJECT_SLUG:fenix-schemabridge'
+```
+
+Supply both variables on every release: dashboard-only values can be overwritten by Wrangler. The SHA is kept outside the source it identifies. After deployment, reconcile the Cloudflare version with the reviewed checkout and independently check health, proof and fixture responses. A configured SHA alone does not prove that matching code was uploaded. See [Cloudflare Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/) and [Wrangler configuration](https://developers.cloudflare.com/workers/wrangler/configuration/).
+
 ## File guide
-
-### Sites hosting output
-
-`npm run build` copies the unchanged Worker modules into `dist/server/` and the registered Site manifest into `dist/.openai/hosting.json`. The entry is `dist/server/index.js`; the build adds no runtime dependencies. Configure `REVIEW_COMMIT` and `PROJECT_SLUG` through the hosting service, using the actual source revision being deployed. Generated output and local credentials are not source files.
-
-A private hosted URL is useful for owner review but cannot establish the unauthenticated public access required by the competition. Verify the actual audience and public endpoint responses before submitting it.
-
-For an independent deployment, use your own Cloudflare Workers account and choose your own unique `name` in `wrangler.jsonc`. Authenticate the official Wrangler CLI, deploy with `wrangler deploy`, and configure `REVIEW_COMMIT` and `PROJECT_SLUG` as plain runtime variables for that deployment. Read `REVIEW_COMMIT` from the unchanged reviewed Git checkout. Alternatively, register a new Site in your own workspace, replace `.openai/hosting.json` with that Site's returned identifier, build and publish through Sites. The included Site identifier belongs to the original project; it is not a credential and does not grant access. Creating a separate configuration changes source and requires its own reviewed commit.
 
 The public API has no application authentication or per-client rate limiter. It accepts only bounded, in-memory transformations: no outbound fetches, code execution or persistence. Request limits do not establish service capacity or continuous availability. The application does not log request bodies; provider transport logs and their retention are governed by the hosting provider and have not been independently audited. Use synthetic or non-sensitive data for evaluation.
 
@@ -157,4 +168,4 @@ The public API has no application authentication or per-client rate limiter. It 
 - `test/worker.test.mjs`: behavior and boundary checks, including real loopback HTTP.
 - `VERIFICATION.md`: what was actually run and what remains unverified.
 
-No license or event rights declaration is granted by this prototype. Publishing, accepting program terms and submitting a rights declaration are separate later steps.
+Publication does not grant an unrestricted license or accept the event rights declaration. Contest registration, the applicable declaration and submission remain separate steps.

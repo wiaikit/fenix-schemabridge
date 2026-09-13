@@ -1,5 +1,9 @@
 # Verification
 
+## Cloudflare migration — 13 September 2026
+
+The deployment target is Cloudflare Workers at schemabridge.wiaikit.com. The build uses pinned Wrangler 4.131.1 in dry-run mode; the former hosting adapter and project manifest have been removed. The transformation and HTTP implementation are unchanged by this migration. Public checks for the new deployment are recorded separately with the resulting real Git SHA, Cloudflare version and timestamps; the historical local results below are not cloud-deployment evidence.
+
 ## Review update — 13 September 2026
 
 An independent source audit reproduced an ambiguity in the integer-input documentation: JSON parsing can round a numeric literal before validation. README and OpenAPI now distinguish parsed IEEE-754 numbers from strict decimal strings. A raw-body regression covers five numeric spellings, their parsed values, unchanged-cell counts, and rejection of the equivalent strings. `node --test` passed **29 tests, 0 failures** after this correction. No transformation-runtime change was necessary.
@@ -24,7 +28,7 @@ The Node suite covers all four conversion types, safe integer handling, null/mis
 
 The workerd checks used Wrangler's local runtime and bundling, with remote bindings disabled. They verified fixture results, unconfigured health/proof refusal, all four OpenAPI paths, quoted and malformed CSV, exact 32 KiB and oversized bodies, chunked requests, UTF-8 split across individual bytes, JSON/CSV limit boundaries, output amplification and HTTP errors. No core implementation change was needed for that runtime.
 
-Health/proof responses with configured values were tested in the Node suite using explicitly synthetic test values. The local workerd run used no commit configuration and correctly returned 503. No real public commit or deployed proof has been verified.
+Health/proof responses with configured values were tested in the Node suite using explicitly synthetic test values. The local workerd run used no commit configuration and correctly returned 503. No real public commit or deployed proof was verified in that earlier local run.
 
 ## Reproduce
 
@@ -43,7 +47,7 @@ node tools/workerd-smoke.mjs http://127.0.0.1:8789
 
 The checked runtime used HTTP port 8789 and inspector port 9234. It was stopped after testing, and both ports were confirmed closed. [Official Wrangler package](https://www.npmjs.com/package/wrangler/v/4.131.1), [command reference](https://developers.cloudflare.com/workers/wrangler/commands/).
 
-## Remaining checks
+## Limits of the earlier local checks
 
 Local timings do not establish compliance with Cloudflare Free's **10 ms cloud CPU limit**. Public hosting, real source/deployment provenance, sustained availability and cloud CPU usage remain unverified. The OpenAPI document was served and its path inventory checked; it has not been validated with an external OpenAPI validator.
 

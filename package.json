@@ -5,7 +5,7 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
-    "build": "node tools/build-sites.mjs",
+    "build": "npm exec --yes --package=wrangler@4.131.1 -- wrangler deploy --dry-run --outdir dist/cloudflare",
     "test": "node --test",
     "start": "node tools/serve.mjs",
     "demo": "node tools/demo.mjs"
