@@ -50,9 +50,23 @@ test('conversion rules accept each documented primitive type', async () => {
   }
 });
 
-test('integer conversion rejects rounding, fractions, leading zeros, booleans and whitespace', async () => {
+test('integer conversion rejects unsafe numbers and noncanonical integer strings', async () => {
   for (const value of ['9007199254740993', 9007199254740992, '1.0', '1e2', '01', '+1', true, ' 1 ', '']) {
     await error(payload(value, 'integer'), 422, 'VALIDATION_FAILED');
+  }
+});
+
+test('raw JSON numbers are validated after IEEE-754 parsing; strings retain exact spelling', async () => {
+  for (const [literal, expected] of [
+    ['1.0000000000000001', 1], ['9007199254740990.5', 9007199254740990],
+    ['9007199254740991.1', 9007199254740991], ['1.0', 1], ['1e2', 100],
+  ]) {
+    const raw = `{"format":"json","data":[{"value":${literal}}],"schema":[{"source":"value","target":"result","type":"integer"}]}`;
+    const actual = await post(null, { raw });
+    assert.equal(actual.response.status, 200, literal);
+    assert.equal(actual.body.data[0].result, expected);
+    assert.equal(actual.body.summary.convertedCells, 0);
+    await error(payload(literal, 'integer'), 422, 'VALIDATION_FAILED');
   }
 });
 

@@ -56,15 +56,15 @@ JSON input must be an array of flat objects. All cells, including unmapped cells
 | Target type | Accepted values |
 |---|---|
 | `string` | String, finite number or boolean. Numbers and booleans are converted to text. |
-| `integer` | A safe integer number, or its decimal string form. No fractions, exponents, leading plus or extra leading zeros. Values outside JavaScript's safe integer range are rejected. |
+| `integer` | A parsed IEEE-754 number that is a safe integer, or a strict decimal integer string. Strings cannot contain fractions, exponents, leading plus or extra leading zeros. Values outside JavaScript's safe integer range are rejected. |
 | `number` | A finite number, or a JSON-style decimal string, including an exponent. Hexadecimal and non-finite values are rejected. |
 | `boolean` | A boolean, or exactly `"true"` or `"false"`. `1`, `"yes"` and `"TRUE"` are not accepted. |
 
-Numbers use JavaScript's IEEE-754 representation. This is not a decimal accounting engine. Send identifiers or integers beyond the safe integer range as strings and keep the target type `string` if their exact digits matter.
+Numbers use JavaScript's IEEE-754 representation. JSON parsing happens before field validation: a raw JSON number such as `1.0000000000000001` rounds to `1`, and numeric `1e2` becomes `100`. The integer check sees those parsed values, not their original spelling. Send numeric data as strings when the original digits must be validated; for example, the string `"1.0000000000000001"` is rejected by an integer mapping. This is not a decimal accounting engine. Send identifiers or integers beyond the safe integer range as strings and keep the target type `string` if their exact digits matter.
 
 Each mapping accepts three optional switches: `required` defaults to `true`, `nullable` to `false`, and `trim` to `false`. A missing optional field is omitted. `nullable: true` preserves an explicit null. Empty CSV cells are empty strings, not null. `trim: true` trims string input before conversion; it never runs automatically. Unknown envelope or schema options are rejected. There are no arbitrary expressions, user-defined code, URL imports or regex transformations.
 
-The success summary counts input/output rows, mappings and cells whose value or type changed. Renaming a field alone is not a cell conversion. Missing optional fields and retained nulls do not increase that count.
+The success summary counts input/output rows, mappings and cells whose value or type changed after JSON parsing. It does not count rounding performed by the JSON parser. Renaming a field alone is not a cell conversion. Missing optional fields and retained nulls do not increase that count.
 
 ### Limits and errors
 
@@ -142,6 +142,10 @@ The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfig
 `npm run build` copies the unchanged Worker modules into `dist/server/` and the registered Site manifest into `dist/.openai/hosting.json`. The entry is `dist/server/index.js`; the build adds no runtime dependencies. Configure `REVIEW_COMMIT` and `PROJECT_SLUG` through the hosting service, using the actual source revision being deployed. Generated output and local credentials are not source files.
 
 A private hosted URL is useful for owner review but cannot establish the unauthenticated public access required by the competition. Verify the actual audience and public endpoint responses before submitting it.
+
+For an independent deployment, use your own Cloudflare Workers account and choose your own unique `name` in `wrangler.jsonc`. Authenticate the official Wrangler CLI, deploy with `wrangler deploy`, and configure `REVIEW_COMMIT` and `PROJECT_SLUG` as plain runtime variables for that deployment. Read `REVIEW_COMMIT` from the unchanged reviewed Git checkout. Alternatively, register a new Site in your own workspace, replace `.openai/hosting.json` with that Site's returned identifier, build and publish through Sites. The included Site identifier belongs to the original project; it is not a credential and does not grant access. Creating a separate configuration changes source and requires its own reviewed commit.
+
+The public API has no application authentication or per-client rate limiter. It accepts only bounded, in-memory transformations: no outbound fetches, code execution or persistence. Request limits do not establish service capacity or continuous availability. The application does not log request bodies; provider transport logs and their retention are governed by the hosting provider and have not been independently audited. Use synthetic or non-sensitive data for evaluation.
 
 - `src/transform.mjs`: schema checks, CSV parser and conversion logic.
 - `src/worker.mjs`: bounded HTTP body reading, route handling and commit responses.
