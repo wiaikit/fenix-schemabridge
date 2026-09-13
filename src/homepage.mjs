@@ -70,11 +70,11 @@ B2,Coffee,0,false</textarea>
     <footer>
       <details class="developer-details">
         <summary>For developers</summary>
-        <p>Call the same API from your application. Request formats and limits are documented in OpenAPI.</p>
+        <p>Read the API guide, check service status, or browse the source code.</p>
         <nav aria-label="API documentation">
-          <a href="/v1">API overview</a>
-          <a href="/health">Service health</a>
-          <a href="/openapi.json">OpenAPI</a>
+          <a href="/docs#overview">API overview</a>
+          <a href="/status">Service health</a>
+          <a href="/docs#openapi">OpenAPI</a>
           <a href="https://github.com/wiaikit/fenix-schemabridge" rel="noreferrer">Source code</a>
         </nav>
       </details>

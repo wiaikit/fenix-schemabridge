@@ -1,5 +1,9 @@
 # Verification
 
+## Readable developer links — 13 September 2026
+
+The homepage developer links now target readable documentation at /docs and live status at /status. The JSON API index, health, deployment proof and OpenAPI paths remain available with their machine contracts. Documentation examples and links are checked against the implementation, and the status page must distinguish an actual successful health response from unavailable or unverified service state. Fresh link-by-link browser and public-source checks are recorded separately for the resulting deployed commit; earlier evidence is historical.
+
 ## Human-readable homepage — 13 September 2026
 
 The root route serves an English HTML page with a live editable CSV example. The owner's language correction removes Russian copy and the language switch from the page and browser script. The machine-readable index remains at /v1. Two local asset routes serve CSS and JavaScript with a Content Security Policy that permits only same-origin scripts, styles and API requests; no inline scripts or third-party dependencies are required. The transformation implementation is unchanged. Fresh browser and deployment checks are recorded separately after publishing this reviewed revision; earlier HTTP counts below describe earlier revisions.

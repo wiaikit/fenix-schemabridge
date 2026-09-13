@@ -1,11 +1,14 @@
 import { ApiError, LIMITS, transform } from './transform.mjs';
 import { openapi } from './openapi.mjs';
 import { homepageHtml, homepageCss, homepageJs } from './homepage.mjs';
+import { docsHtml, statusHtml, docsCss, statusJs } from './docs.mjs';
 
 const encoder = new TextEncoder();
 const routes = new Map([
   ['/', 'GET'], ['/v1', 'GET'],
   ['/assets/app.css', 'GET'], ['/assets/app.js', 'GET'],
+  ['/docs', 'GET'], ['/status', 'GET'],
+  ['/assets/docs.css', 'GET'], ['/assets/status.js', 'GET'],
   ['/v1/transform', 'POST'], ['/health', 'GET'],
   ['/.well-known/xagent-verification.json', 'GET'], ['/openapi.json', 'GET'],
 ]);
@@ -87,6 +90,10 @@ export default {
       if (path === '/') return pageAsset(homepageHtml, 'text/html; charset=utf-8');
       if (path === '/assets/app.css') return pageAsset(homepageCss, 'text/css; charset=utf-8');
       if (path === '/assets/app.js') return pageAsset(homepageJs, 'text/javascript; charset=utf-8');
+      if (path === '/docs') return pageAsset(docsHtml, 'text/html; charset=utf-8');
+      if (path === '/status') return pageAsset(statusHtml, 'text/html; charset=utf-8');
+      if (path === '/assets/docs.css') return pageAsset(docsCss, 'text/css; charset=utf-8');
+      if (path === '/assets/status.js') return pageAsset(statusJs, 'text/javascript; charset=utf-8');
       if (path === '/v1') {
         return json({ name: 'SchemaBridge', version: '0.1.0',
           description: 'Map small CSV or JSON record sets to explicit field names and types.',

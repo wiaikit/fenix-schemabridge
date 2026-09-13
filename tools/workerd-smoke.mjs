@@ -57,7 +57,7 @@ await check('OpenAPI responds with all six paths', async () => {
   const result = await call('/openapi.json');
   assert.equal(result.status, 200);
   assert.equal(result.body.openapi, '3.1.0');
-  assert.deepEqual(Object.keys(result.body.paths).sort(), ['/', '/v1', '/.well-known/xagent-verification.json', '/health', '/openapi.json', '/v1/transform'].sort());
+  assert.deepEqual(Object.keys(result.body.paths).sort(), ['/', '/docs', '/status', '/v1', '/.well-known/xagent-verification.json', '/health', '/openapi.json', '/v1/transform'].sort());
 });
 await check('quoted CSV newline and escaped quote survive the real runtime', async () => {
   const result = await post({ format: 'csv', data: 'value\r\n"tea,""green""\nline"\r\n', schema: [field()] });

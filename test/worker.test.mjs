@@ -272,7 +272,7 @@ test('configured proof routes preserve the supplied SHA and exact X-Agent shapes
 });
 
 test('methods, unknown routes and OpenAPI are explicit', async () => {
-  for (const path of ['/', '/assets/app.css', '/assets/app.js', '/v1', '/health', '/.well-known/xagent-verification.json', '/openapi.json']) {
+  for (const path of ['/', '/docs', '/status', '/assets/app.css', '/assets/app.js', '/assets/docs.css', '/assets/status.js', '/v1', '/health', '/.well-known/xagent-verification.json', '/openapi.json']) {
     const response = await worker.fetch(new Request(`http://localhost${path}`, { method: 'POST' }));
     assert.equal(response.status, 405);
     assert.equal(response.headers.get('allow'), 'GET');
@@ -285,7 +285,7 @@ test('methods, unknown routes and OpenAPI are explicit', async () => {
   assert.equal(response.status, 200);
   const document = await response.json();
   assert.equal(document.openapi, '3.1.0');
-  assert.deepEqual(Object.keys(document.paths).sort(), ['/', '/v1', '/.well-known/xagent-verification.json', '/health', '/openapi.json', '/v1/transform'].sort());
+  assert.deepEqual(Object.keys(document.paths).sort(), ['/', '/docs', '/status', '/v1', '/.well-known/xagent-verification.json', '/health', '/openapi.json', '/v1/transform'].sort());
   for (const path of ['/v1']) {
     const index = await worker.fetch(new Request(`http://localhost${path}`));
     assert.equal(index.status, 200);
@@ -329,6 +329,58 @@ test('independent requests do not retain record state', async () => {
   const [first, second] = await Promise.all([post(payload('first')), post(payload('second'))]);
   assert.deepEqual(first.body.data, [{ result: 'first' }]);
   assert.deepEqual(second.body.data, [{ result: 'second' }]);
+});
+
+test('all local page links and fragments resolve to available resources', async () => {
+  const env = { REVIEW_COMMIT: '1234567890abcdef1234567890abcdef12345678', PROJECT_SLUG: 'fenix-schemabridge' };
+  const bodies = new Map();
+  for (const path of ['/', '/docs', '/status']) {
+    const response = await worker.fetch(new Request(`http://localhost${path}`), env);
+    assert.equal(response.status, 200, path);
+    assert.match(response.headers.get('content-type'), /^text\/html;/);
+    const html = await response.text();
+    assert.match(html, /lang="en"/);
+    assert.doesNotMatch(html, /[\u0400-\u04ff]/);
+    bodies.set(path, html);
+  }
+  for (const [path, html] of bodies) {
+    for (const match of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
+      const target = new URL(match[1], `http://localhost${path}`);
+      if (target.origin !== 'http://localhost') {
+        assert.equal(target.protocol, 'https:');
+        assert.equal(target.hostname, 'github.com');
+        continue;
+      }
+      const response = await worker.fetch(new Request(target), env);
+      assert.equal(response.status, 200, `${path} -> ${match[1]}`);
+      if (target.hash) {
+        const body = bodies.get(target.pathname) ?? await response.text();
+        assert.ok(body.includes(`id="${decodeURIComponent(target.hash.slice(1))}"`), `Missing anchor: ${match[1]}`);
+      }
+    }
+  }
+});
+
+test('documentation CSV and JSON requests are executable examples', async () => {
+  const html = await (await worker.fetch(new Request('http://localhost/docs'))).text();
+  function example(id) {
+    const match = html.match(new RegExp(`<pre[^>]*id="${id}"[^>]*>([\\s\\S]*?)</pre>`));
+    assert.ok(match, `Missing example ${id}`);
+    return JSON.parse(match[1].replace(/<\/?code[^>]*>/g, '').replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&'));
+  }
+  for (const id of ['csv-request-example', 'json-request-example']) {
+    const requestBody = example(id);
+    const response = await worker.fetch(new Request('http://localhost/v1/transform', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(requestBody) }));
+    assert.equal(response.status, 200, id);
+    const body = await response.json();
+    assert.equal(body.ok, true);
+    assert.deepEqual(body, example(id.replace('request', 'response')), id);
+  }
+  const invalid = example('csv-request-example');
+  invalid.data = invalid.data.replace(',7,true', ',seven,true');
+  const response = await worker.fetch(new Request('http://localhost/v1/transform', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(invalid) }));
+  assert.equal(response.status, 422);
+  assert.deepEqual(await response.json(), example('error-response-example'));
 });
 
 test('local HTTP adapter exposes the real handler and body limit on loopback', async t => {

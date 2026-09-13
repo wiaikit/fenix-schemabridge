@@ -30,6 +30,8 @@ The example returns two records. Tea has quantity `7` and availability `true`; c
 | Method and path | Purpose |
 |---|---|
 | `GET /` | Open the English homepage and run an editable CSV example. |
+| `GET /docs` | Read the English API guide, examples, field rules and error reference. |
+| `GET /status` | Open the status page, which checks the real `/health` response. |
 | `GET /v1` | Read the JSON API description, capability method/path and documentation links. |
 | `POST /v1/transform` | Convert in-body records using the supplied schema. |
 | `GET /health` | Report a configured reviewed source commit, or HTTP 503 when missing/invalid. |
@@ -139,7 +141,7 @@ The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfig
 
 ## Cloudflare deployment
 
-The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The homepage explains the service and offers a live CSV example in English. The example uses four fixed mappings; edit its CSV and run it to see the actual API response as a table. A general schema editor is not included. The API endpoints continue to return JSON. Its [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json) use the same Cloudflare custom domain.
+The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The homepage explains the service and offers a live CSV example in English. The example uses four fixed mappings; edit its CSV and run it to see the actual API response as a table. A general schema editor is not included. The developer links open the readable [API guide](https://schemabridge.wiaikit.com/docs) and [live status page](https://schemabridge.wiaikit.com/status). Machine endpoints continue to return JSON: [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json). All use the same Cloudflare custom domain.
 
 `npm run build` uses the pinned official Wrangler 4.131.1 package to bundle the Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
 
@@ -161,6 +163,7 @@ Supply both variables on every release: dashboard-only values can be overwritten
 The public API has no application authentication or per-client rate limiter. It accepts only bounded, in-memory transformations: no outbound fetches, code execution or persistence. Request limits do not establish service capacity or continuous availability. The application does not log request bodies; provider transport logs and their retention are governed by the hosting provider and have not been independently audited. Use synthetic or non-sensitive data for evaluation.
 
 - `src/homepage.mjs`: accessible homepage, local stylesheet and browser script; all demo requests use the same API origin.
+- `src/docs.mjs`: English API guide and status page; status is read from the real same-origin health endpoint.
 - `src/transform.mjs`: schema checks, CSV parser and conversion logic.
 - `src/worker.mjs`: bounded HTTP body reading, route handling and commit responses.
 - `src/openapi.mjs`: the API description served by the Worker.
