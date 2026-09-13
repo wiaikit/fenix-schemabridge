@@ -74,7 +74,7 @@ B2,Coffee,0,false</textarea>
         <nav aria-label="API documentation">
           <a href="/docs#overview">API overview</a>
           <a href="/status">Service health</a>
-          <a href="/docs#openapi">OpenAPI</a>
+          <a href="/docs">OpenAPI</a>
           <a href="https://github.com/wiaikit/fenix-schemabridge" rel="noreferrer">Source code</a>
         </nav>
       </details>
