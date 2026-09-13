@@ -29,6 +29,7 @@ The example returns two records. Tea has quantity `7` and availability `true`; c
 
 | Method and path | Purpose |
 |---|---|
+| `GET /` and `GET /v1` | Read the service description, capability method/path and documentation links. |
 | `POST /v1/transform` | Convert in-body records using the supplied schema. |
 | `GET /health` | Report a configured reviewed source commit, or HTTP 503 when missing/invalid. |
 | `GET /.well-known/xagent-verification.json` | Report the configured project slug and source commit, or HTTP 503. |

@@ -4,6 +4,8 @@
 
 An independent source audit reproduced an ambiguity in the integer-input documentation: JSON parsing can round a numeric literal before validation. README and OpenAPI now distinguish parsed IEEE-754 numbers from strict decimal strings. A raw-body regression covers five numeric spellings, their parsed values, unchanged-cell counts, and rejection of the equivalent strings. `node --test` passed **29 tests, 0 failures** after this correction. No transformation-runtime change was necessary.
 
+The release also provides `GET /` and `GET /v1` service descriptions so the published base address is directly useful in a browser. Existing routing tests verify both descriptions, request limits, capability method/path, wrong-method refusal and the six documented routes.
+
 Public-release HTTP results and final source/deployment reconciliation are recorded separately in the contest entry's `verification/README.md`; the historical checks below do not claim public availability.
 
 ## Earlier local verification

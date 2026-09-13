@@ -3,6 +3,7 @@ import { openapi } from './openapi.mjs';
 
 const encoder = new TextEncoder();
 const routes = new Map([
+  ['/', 'GET'], ['/v1', 'GET'],
   ['/v1/transform', 'POST'], ['/health', 'GET'],
   ['/.well-known/xagent-verification.json', 'GET'], ['/openapi.json', 'GET'],
 ]);
@@ -71,6 +72,15 @@ export default {
       const method = routes.get(path);
       if (!method) return json({ ok: false, error: { code: 'NOT_FOUND', message: 'Unknown API route.' } }, 404);
       if (request.method !== method) return json({ ok: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Unsupported HTTP method.' } }, 405, { allow: method });
+      if (path === '/' || path === '/v1') {
+        return json({ name: 'SchemaBridge', version: '0.1.0',
+          description: 'Map small CSV or JSON record sets to explicit field names and types.',
+          capability: { method: 'POST', path: '/v1/transform', contentType: 'application/json' },
+          documentation: '/openapi.json', health: '/health',
+          deploymentProof: '/.well-known/xagent-verification.json',
+          limits: { requestBytes: LIMITS.bodyBytes, records: LIMITS.rows },
+        });
+      }
       if (path === '/health') {
         const { commit } = proofConfig(env, false);
         return json({ status: 'ok', commit });
