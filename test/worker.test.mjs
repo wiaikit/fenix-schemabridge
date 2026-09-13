@@ -307,7 +307,8 @@ test('homepage and its local assets are served as a restricted browser interface
   assert.match(csp, /frame-ancestors 'none'/);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
   const html = await response.text();
-  assert.match(html, /lang="ru"/);
+  assert.match(html, /lang="en"/);
+  assert.doesNotMatch(html, /[\u0400-\u04ff]|data-language|language-switch/);
   assert.match(html, /<main[\s>]/);
   assert.match(html, /<textarea[\s>]/);
   assert.match(html, /src="\/assets\/app\.js"/);
@@ -318,7 +319,9 @@ test('homepage and its local assets are served as a restricted browser interface
     assert.equal(asset.status, 200);
     assert.ok(asset.headers.get('content-type').startsWith(type));
     assert.equal(asset.headers.get('x-content-type-options'), 'nosniff');
-    assert.ok((await asset.text()).length > 0);
+    const assetText = await asset.text();
+    assert.ok(assetText.length > 0);
+    assert.doesNotMatch(assetText, /[\u0400-\u04ff]|data-language|language-switch/);
   }
 });
 

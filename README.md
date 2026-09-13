@@ -29,7 +29,7 @@ The example returns two records. Tea has quantity `7` and availability `true`; c
 
 | Method and path | Purpose |
 |---|---|
-| `GET /` | Open the Russian/English homepage and run an editable CSV example. |
+| `GET /` | Open the English homepage and run an editable CSV example. |
 | `GET /v1` | Read the JSON API description, capability method/path and documentation links. |
 | `POST /v1/transform` | Convert in-body records using the supplied schema. |
 | `GET /health` | Report a configured reviewed source commit, or HTTP 503 when missing/invalid. |
@@ -139,7 +139,7 @@ The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfig
 
 ## Cloudflare deployment
 
-The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The homepage explains the service and offers a live CSV example in Russian and English. The example uses four fixed mappings; edit its CSV and run it to see the actual API response as a table. A general schema editor is not included. The API endpoints continue to return JSON. Its [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json) use the same Cloudflare custom domain.
+The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The homepage explains the service and offers a live CSV example in English. The example uses four fixed mappings; edit its CSV and run it to see the actual API response as a table. A general schema editor is not included. The API endpoints continue to return JSON. Its [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json) use the same Cloudflare custom domain.
 
 `npm run build` uses the pinned official Wrangler 4.131.1 package to bundle the Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
 

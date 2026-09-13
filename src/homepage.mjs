@@ -1,88 +1,84 @@
 export const homepageHtml = `<!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Переименуйте поля и проверьте типы данных в небольших таблицах CSV или JSON. Попробуйте SchemaBridge на простом примере.">
-  <title>SchemaBridge · Понятные данные из CSV и JSON</title>
+  <meta name="description" content="Rename fields and check data types in small CSV or JSON tables. Try SchemaBridge with a simple live example.">
+  <title>SchemaBridge · Clear data from CSV and JSON</title>
   <link rel="stylesheet" href="/assets/app.css">
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#demo" data-i18n="skip">Перейти к примеру</a>
+  <a class="skip-link" href="#demo">Skip to the example</a>
   <div class="page">
     <header class="site-header">
       <a class="wordmark" href="/" aria-label="SchemaBridge">Schema<span>Bridge</span></a>
-      <div class="language-switch" role="group" aria-label="Язык страницы" data-i18n-aria="language">
-        <button type="button" data-language="ru" aria-pressed="true" lang="ru">RU</button>
-        <button type="button" data-language="en" aria-pressed="false" lang="en">EN</button>
-      </div>
     </header>
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <p class="intro-label" data-i18n="eyebrow">Небольшие таблицы. Явные правила.</p>
-        <h1 id="page-title" data-i18n="heading">Приведите данные к нужному виду.</h1>
-        <p class="lead" data-i18n="intro">SchemaBridge переименовывает поля и проверяет типы в небольших таблицах CSV или JSON. Например, stock становится quantity, а текст «7» превращается в число 7. Попробуйте на двух товарах ниже.</p>
+        <p class="intro-label">Small tables. Explicit rules.</p>
+        <h1 id="page-title">Get your data into the right shape.</h1>
+        <p class="lead">SchemaBridge renames fields and checks types in small CSV or JSON tables. For example, stock becomes quantity, and the text “7” becomes the number 7. Try it with the two products below.</p>
       </section>
 
       <section id="demo" class="demo" aria-labelledby="demo-title" tabindex="-1">
         <div class="demo-heading">
-          <h2 id="demo-title" data-i18n="demoTitle">От CSV к понятным полям</h2>
-          <p data-i18n="demoIntro">Измените исходные значения и отправьте их на API. Результат появится только после ответа сервера.</p>
+          <h2 id="demo-title">From CSV to clearly defined fields</h2>
+          <p>Edit the source values and send them to the API. Results appear only after the server responds.</p>
         </div>
         <form id="demo-form">
           <div class="panels">
             <section class="input-panel" aria-labelledby="input-title">
-              <div class="panel-heading"><h3 id="input-title" data-i18n="inputTitle">Исходные данные</h3><span class="format-label">CSV</span></div>
-              <label for="csv-input" data-i18n="inputLabel">Таблица с заголовком и двумя товарами</label>
+              <div class="panel-heading"><h3 id="input-title">Source data</h3><span class="format-label">CSV</span></div>
+              <label for="csv-input">A header and two product records</label>
               <textarea id="csv-input" name="csv" rows="7" maxlength="32768" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="input-help limits">sku,name,stock,active
 A1,"Tea, green",7,true
 B2,Coffee,0,false</textarea>
-              <p id="input-help" class="field-help" data-i18n="inputHelp">Можно редактировать. Замените 7 на seven, чтобы увидеть понятную ошибку проверки.</p>
+              <p id="input-help" class="field-help">You can edit this. Replace 7 with seven to see an explanatory validation error.</p>
               <div class="actions">
-                <button id="submit-button" class="primary-button" type="submit" data-i18n="submit">Преобразовать пример</button>
-                <button id="reset-button" class="reset-button" type="button" data-i18n="reset">Сбросить</button>
+                <button id="submit-button" class="primary-button" type="submit">Transform example</button>
+                <button id="reset-button" class="reset-button" type="button">Reset</button>
               </div>
             </section>
             <section id="result-panel" class="result-panel" aria-labelledby="result-title" aria-busy="false">
-              <div class="panel-heading"><h3 id="result-title" data-i18n="resultTitle">Результат</h3><span class="format-label" data-i18n="typedData">Поля и типы</span></div>
-              <p id="status" class="status" role="status" aria-live="polite" aria-atomic="true">Пока ничего не отправлено. Нажмите «Преобразовать пример».</p>
+              <div class="panel-heading"><h3 id="result-title">Result</h3><span class="format-label">Fields and types</span></div>
+              <p id="status" class="status" role="status" aria-live="polite" aria-atomic="true">Nothing has been sent yet. Select “Transform example”.</p>
               <ul id="field-errors" class="field-errors" hidden></ul>
-              <div id="empty-result" class="empty-result"><p data-i18n="empty">Здесь появится таблица с проверенными значениями.</p></div>
-              <div id="table-container" class="table-container" role="region" aria-label="Преобразованные данные" data-i18n-aria="tableRegion" tabindex="0" hidden></div>
+              <div id="empty-result" class="empty-result"><p>Your table of validated values will appear here.</p></div>
+              <div id="table-container" class="table-container" role="region" aria-label="Transformed data" tabindex="0" hidden></div>
               <details id="response-details" class="response-details" hidden>
-                <summary data-i18n="responseDetails">Посмотреть ответ API в JSON</summary>
+                <summary>View the JSON API response</summary>
                 <pre id="response-json"></pre>
               </details>
             </section>
           </div>
         </form>
         <div class="rules">
-          <p class="rules-title" data-i18n="schemaTitle">В этом примере схема фиксирована</p>
-          <ul class="mapping-list" aria-label="Правила преобразования" data-i18n-aria="mappingLabel">
-            <li><code>sku → id</code><span data-i18n="stringType">текст</span></li>
-            <li><code>name → name</code><span data-i18n="stringType">текст</span></li>
-            <li><code>stock → quantity</code><span data-i18n="integerType">целое число</span></li>
-            <li><code>active → available</code><span data-i18n="booleanType">true или false</span></li>
+          <p class="rules-title">This example uses a fixed schema</p>
+          <ul class="mapping-list" aria-label="Transformation rules">
+            <li><code>sku → id</code><span>text</span></li>
+            <li><code>name → name</code><span>text</span></li>
+            <li><code>stock → quantity</code><span>integer</span></li>
+            <li><code>active → available</code><span>true or false</span></li>
           </ul>
-          <p class="field-help" data-i18n="schemaHelp">Сохраняйте эти четыре заголовка. API позволяет задать другую схему и принимать JSON; здесь показан один простой сценарий.</p>
+          <p class="field-help">Keep these four headers. The API also accepts custom schemas and JSON; this page demonstrates one simple workflow.</p>
         </div>
-        <p id="limits" class="limits" data-i18n="limits">До 100 строк данных и 32 КиБ на весь запрос, включая схему. Используйте только вымышленные данные без личной или конфиденциальной информации.</p>
-        <noscript><p class="noscript-note">Для живого примера нужен JavaScript. Документация API доступна по ссылкам ниже. JavaScript is needed for the live example; API documentation is linked below.</p></noscript>
+        <p id="limits" class="limits">Up to 100 data rows and 32 KiB for the entire request, including the schema. Use only synthetic data with no personal or confidential information.</p>
+        <noscript><p class="noscript-note">JavaScript is needed for the live example; API documentation is linked below.</p></noscript>
       </section>
     </main>
     <footer>
       <details class="developer-details">
-        <summary data-i18n="developerTitle">Для разработчиков</summary>
-        <p data-i18n="developerHelp">Тот же API можно вызвать из вашего приложения. Форматы запросов и ограничения описаны в OpenAPI.</p>
-        <nav aria-label="Документация API" data-i18n-aria="developerNav">
-          <a href="/v1" data-i18n="apiLink">Обзор API</a>
-          <a href="/health" data-i18n="healthLink">Состояние сервиса</a>
+        <summary>For developers</summary>
+        <p>Call the same API from your application. Request formats and limits are documented in OpenAPI.</p>
+        <nav aria-label="API documentation">
+          <a href="/v1">API overview</a>
+          <a href="/health">Service health</a>
           <a href="/openapi.json">OpenAPI</a>
-          <a href="https://github.com/wiaikit/fenix-schemabridge" rel="noreferrer" data-i18n="sourceLink">Исходный код</a>
+          <a href="https://github.com/wiaikit/fenix-schemabridge" rel="noreferrer">Source code</a>
         </nav>
       </details>
-      <p class="footer-note" data-i18n="footerNote">SchemaBridge · Преобразование по правилам, которые задаёте вы.</p>
+      <p class="footer-note">SchemaBridge · Transform data using rules you define.</p>
     </footer>
   </div>
 </body>
@@ -105,9 +101,6 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,summary:focus-visibl
 .site-header{min-height:92px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line)}
 .wordmark{text-decoration:none;font-size:23px;letter-spacing:-.8px;font-weight:750;color:var(--ink)}
 .wordmark span{color:var(--teal)}
-.language-switch{display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--white)}
-.language-switch button{min-width:44px;min-height:40px;padding:5px 9px;border:0;border-radius:5px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
-.language-switch button[aria-pressed="true"]{color:var(--white);background:var(--teal)}
 .intro{padding:56px 0 36px;max-width:850px}
 .intro-label{margin:0 0 14px;color:var(--teal);font-size:14px;font-weight:650}
 h1,h2,h3,p{margin-top:0}
@@ -170,66 +163,34 @@ footer{border-top:1px solid var(--line);padding:20px 0 28px}
 export const homepageJs = String.raw`(() => {
   'use strict';
   const copy = {
-    ru: {
-      pageTitle: 'SchemaBridge · Понятные данные из CSV и JSON', language: 'Язык страницы', skip: 'Перейти к примеру',
-      eyebrow: 'Небольшие таблицы. Явные правила.', heading: 'Приведите данные к нужному виду.',
-      intro: 'SchemaBridge переименовывает поля и проверяет типы в небольших таблицах CSV или JSON. Например, stock становится quantity, а текст «7» превращается в число 7. Попробуйте на двух товарах ниже.',
-      demoTitle: 'От CSV к понятным полям', demoIntro: 'Измените исходные значения и отправьте их на API. Результат появится только после ответа сервера.',
-      inputTitle: 'Исходные данные', inputLabel: 'Таблица с заголовком и двумя товарами', inputHelp: 'Можно редактировать. Замените 7 на seven, чтобы увидеть понятную ошибку проверки.',
-      submit: 'Преобразовать пример', reset: 'Сбросить', resultTitle: 'Результат', typedData: 'Поля и типы',
-      idle: 'Пока ничего не отправлено. Нажмите «Преобразовать пример».', edited: 'Данные изменены. Преобразуйте их, чтобы получить новый результат.',
-      pending: 'Отправляем данные и проверяем типы…', empty: 'Здесь появится таблица с проверенными значениями.',
-      tableRegion: 'Преобразованные данные', tableCaption: 'Значения из ответа API. Текст в кавычках; числа и true/false без кавычек.',
-      responseDetails: 'Посмотреть ответ API в JSON', schemaTitle: 'В этом примере схема фиксирована', mappingLabel: 'Правила преобразования',
-      stringType: 'текст', integerType: 'целое число', booleanType: 'true или false',
-      schemaHelp: 'Сохраняйте эти четыре заголовка. API позволяет задать другую схему и принимать JSON; здесь показан один простой сценарий.',
-      limits: 'До 100 строк данных и 32 КиБ на весь запрос, включая схему. Используйте только вымышленные данные без личной или конфиденциальной информации.',
-      developerTitle: 'Для разработчиков', developerHelp: 'Тот же API можно вызвать из вашего приложения. Форматы запросов и ограничения описаны в OpenAPI.',
-      developerNav: 'Документация API', apiLink: 'Обзор API', healthLink: 'Состояние сервиса', sourceLink: 'Исходный код', footerNote: 'SchemaBridge · Преобразование по правилам, которые задаёте вы.',
-      success: (rows, cells) => 'Готово. Обработано строк: ' + rows + '. Изменён тип значений: ' + cells + '.',
-      validation: 'Некоторые значения не подходят под схему. Для stock нужно целое число, для active только true или false. Исправьте данные и повторите. Частичный результат не возвращается.',
-      invalidCsv: 'Не удалось прочитать CSV. Проверьте запятые, кавычки и одинаковое число ячеек в каждой строке.',
-      header: 'Сохраните заголовок sku,name,stock,active. Имена колонок должны быть уникальными.',
-      tooLarge: 'Запрос слишком большой. Сократите данные: максимум 100 строк и 32 КиБ вместе со схемой.',
-      cellLimit: 'Слишком длинное значение или слишком много колонок. Сократите ячейки и оставьте четыре колонки примера.',
-      timeout: 'Сервер не ответил за 15 секунд. Проверьте соединение и попробуйте ещё раз.',
-      network: 'Не удалось связаться с сервисом. Проверьте соединение и попробуйте ещё раз.',
-      server: 'Сервис сейчас не смог обработать запрос. Попробуйте ещё раз позже.',
-      unexpected: 'Сервис вернул неожиданный ответ. Результат не показан; попробуйте ещё раз позже.',
-      emptyInput: 'Добавьте CSV с заголовком sku,name,stock,active и строками данных.',
-      field: (row, source, type) => 'Запись ' + row + ', поле ' + source + ': ожидается ' + type + '.',
-      missing: (row, source) => 'Запись ' + row + ': отсутствует обязательное поле ' + source + '.'
-    },
-    en: {
-      pageTitle: 'SchemaBridge · Clear data from CSV and JSON', language: 'Page language', skip: 'Skip to the example',
-      eyebrow: 'Small tables. Explicit rules.', heading: 'Get your data into the right shape.',
-      intro: 'SchemaBridge renames fields and checks types in small CSV or JSON tables. For example, stock becomes quantity, and the text “7” becomes the number 7. Try it with the two products below.',
-      demoTitle: 'From CSV to clearly defined fields', demoIntro: 'Edit the source values and send them to the API. Results appear only after the server responds.',
-      inputTitle: 'Source data', inputLabel: 'A header and two product records', inputHelp: 'You can edit this. Replace 7 with seven to see an explanatory validation error.',
-      submit: 'Transform example', reset: 'Reset', resultTitle: 'Result', typedData: 'Fields and types',
-      idle: 'Nothing has been sent yet. Select “Transform example”.', edited: 'The data has changed. Transform it to see an updated result.',
-      pending: 'Sending data and checking types…', empty: 'Your table of validated values will appear here.',
-      tableRegion: 'Transformed data', tableCaption: 'Values from the API response. Text is quoted; numbers and true/false are not.',
-      responseDetails: 'View the JSON API response', schemaTitle: 'This example uses a fixed schema', mappingLabel: 'Transformation rules',
-      stringType: 'text', integerType: 'integer', booleanType: 'true or false',
-      schemaHelp: 'Keep these four headers. The API also accepts custom schemas and JSON; this page demonstrates one simple workflow.',
-      limits: 'Up to 100 data rows and 32 KiB for the entire request, including the schema. Use only synthetic data with no personal or confidential information.',
-      developerTitle: 'For developers', developerHelp: 'Call the same API from your application. Request formats and limits are documented in OpenAPI.',
-      developerNav: 'API documentation', apiLink: 'API overview', healthLink: 'Service health', sourceLink: 'Source code', footerNote: 'SchemaBridge · Transform data using rules you define.',
-      success: (rows, cells) => 'Done. Rows processed: ' + rows + '. Values with a changed type: ' + cells + '.',
-      validation: 'Some values do not match the schema. stock needs an integer, and active needs true or false. Fix the data and try again. No partial result is returned.',
-      invalidCsv: 'The CSV could not be read. Check commas, quotes and the number of cells in each record.',
-      header: 'Keep the header sku,name,stock,active. Column names must be unique.',
-      tooLarge: 'The request is too large. Reduce the data: at most 100 rows and 32 KiB including the schema.',
-      cellLimit: 'A value is too long or there are too many columns. Shorten the cells and keep the four example columns.',
-      timeout: 'The server did not respond within 15 seconds. Check your connection and try again.',
-      network: 'The service could not be reached. Check your connection and try again.',
-      server: 'The service could not process the request right now. Please try again later.',
-      unexpected: 'The service returned an unexpected response. No result is shown; please try again later.',
-      emptyInput: 'Add CSV with the header sku,name,stock,active and data records.',
-      field: (row, source, type) => 'Record ' + row + ', field ' + source + ': expected ' + type + '.',
-      missing: (row, source) => 'Record ' + row + ': required field ' + source + ' is missing.'
-    }
+    pageTitle: 'SchemaBridge · Clear data from CSV and JSON', skip: 'Skip to the example',
+    eyebrow: 'Small tables. Explicit rules.', heading: 'Get your data into the right shape.',
+    intro: 'SchemaBridge renames fields and checks types in small CSV or JSON tables. For example, stock becomes quantity, and the text “7” becomes the number 7. Try it with the two products below.',
+    demoTitle: 'From CSV to clearly defined fields', demoIntro: 'Edit the source values and send them to the API. Results appear only after the server responds.',
+    inputTitle: 'Source data', inputLabel: 'A header and two product records', inputHelp: 'You can edit this. Replace 7 with seven to see an explanatory validation error.',
+    submit: 'Transform example', reset: 'Reset', resultTitle: 'Result', typedData: 'Fields and types',
+    idle: 'Nothing has been sent yet. Select “Transform example”.', edited: 'The data has changed. Transform it to see an updated result.',
+    pending: 'Sending data and checking types…', empty: 'Your table of validated values will appear here.',
+    tableRegion: 'Transformed data', tableCaption: 'Values from the API response. Text is quoted; numbers and true/false are not.',
+    responseDetails: 'View the JSON API response', schemaTitle: 'This example uses a fixed schema', mappingLabel: 'Transformation rules',
+    stringType: 'text', integerType: 'integer', booleanType: 'true or false',
+    schemaHelp: 'Keep these four headers. The API also accepts custom schemas and JSON; this page demonstrates one simple workflow.',
+    limits: 'Up to 100 data rows and 32 KiB for the entire request, including the schema. Use only synthetic data with no personal or confidential information.',
+    developerTitle: 'For developers', developerHelp: 'Call the same API from your application. Request formats and limits are documented in OpenAPI.',
+    developerNav: 'API documentation', apiLink: 'API overview', healthLink: 'Service health', sourceLink: 'Source code', footerNote: 'SchemaBridge · Transform data using rules you define.',
+    success: (rows, cells) => 'Done. Rows processed: ' + rows + '. Values with a changed type: ' + cells + '.',
+    validation: 'Some values do not match the schema. stock needs an integer, and active needs true or false. Fix the data and try again. No partial result is returned.',
+    invalidCsv: 'The CSV could not be read. Check commas, quotes and the number of cells in each record.',
+    header: 'Keep the header sku,name,stock,active. Column names must be unique.',
+    tooLarge: 'The request is too large. Reduce the data: at most 100 rows and 32 KiB including the schema.',
+    cellLimit: 'A value is too long or there are too many columns. Shorten the cells and keep the four example columns.',
+    timeout: 'The server did not respond within 15 seconds. Check your connection and try again.',
+    network: 'The service could not be reached. Check your connection and try again.',
+    server: 'The service could not process the request right now. Please try again later.',
+    unexpected: 'The service returned an unexpected response. No result is shown; please try again later.',
+    emptyInput: 'Add CSV with the header sku,name,stock,active and data records.',
+    field: (row, source, type) => 'Record ' + row + ', field ' + source + ': expected ' + type + '.',
+    missing: (row, source) => 'Record ' + row + ': required field ' + source + ' is missing.'
   };
   const initialCsv = 'sku,name,stock,active\nA1,"Tea, green",7,true\nB2,Coffee,0,false';
   const schema = [
@@ -239,15 +200,10 @@ export const homepageJs = String.raw`(() => {
   const byId = id => document.getElementById(id);
   const input = byId('csv-input'), submit = byId('submit-button'), reset = byId('reset-button');
   const status = byId('status'), container = byId('table-container'), errors = byId('field-errors');
-  let language = 'ru', phase = 'idle', responseData = null, errorKey = null;
+  let phase = 'idle', responseData = null, errorKey = null;
 
   function render() {
-    const t = copy[language];
-    document.documentElement.lang = language;
-    document.title = t.pageTitle;
-    document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t[node.dataset.i18n]; });
-    document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t[node.dataset.i18nAria]); });
-    document.querySelectorAll('[data-language]').forEach(node => { node.setAttribute('aria-pressed', String(node.dataset.language === language)); });
+    const t = copy;
     const pending = phase === 'pending';
     submit.disabled = pending; reset.disabled = pending; input.disabled = pending;
     byId('result-panel').setAttribute('aria-busy', String(pending));
@@ -342,8 +298,5 @@ export const homepageJs = String.raw`(() => {
   });
   reset.addEventListener('click', () => { if (phase === 'pending') return; input.value = initialCsv; clear('idle'); input.focus(); });
   input.addEventListener('input', () => { if (phase !== 'edited') clear('edited'); });
-  document.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => {
-    language = button.dataset.language === 'en' ? 'en' : 'ru'; render();
-  }));
   render();
 })();`;

@@ -3,7 +3,7 @@ export const openapi = {
   openapi: '3.1.0',
   info: { title: 'SchemaBridge', version: '0.1.0', description: 'Bounded stateless CSV/JSON field mapping. JSON numbers are parsed as IEEE-754 before validation and may already be rounded; integer mappings accept parsed safe integers or strict decimal integer strings. Use string input when exact digits must be validated. Conversion counts start after parsing. Empty CSV cells are empty strings, never implicit null. No CPU-performance claim.' },
   paths: {
-    '/': { get: { operationId: 'serviceHomepage', responses: { '200': { description: 'Human-readable Russian/English homepage and live CSV example.', content: { 'text/html': { schema: { type: 'string' } } } } } } },
+    '/': { get: { operationId: 'serviceHomepage', responses: { '200': { description: 'Human-readable English homepage and live CSV example.', content: { 'text/html': { schema: { type: 'string' } } } } } } },
     '/v1': { get: { operationId: 'apiIndex', responses: { '200': { description: 'API base description and capability request method/path.' } } } },
     '/v1/transform': { post: {
       operationId: 'transformRecords',
