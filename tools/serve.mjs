@@ -1,9 +1,33 @@
 import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import worker from '../src/worker.mjs';
 import { LIMITS } from '../src/transform.mjs';
 
+// An exact map keeps the local adapter from exposing repository files.
+const localAssetFiles = new Map([
+  ['/assets/schema-sculpture.png', new URL('../public/assets/schema-sculpture.png', import.meta.url)],
+  ['/assets/fonts/instrument-sans-latin.woff2', new URL('../public/assets/fonts/instrument-sans-latin.woff2', import.meta.url)],
+  ['/assets/fonts/instrument-serif-latin.woff2', new URL('../public/assets/fonts/instrument-serif-latin.woff2', import.meta.url)],
+  ['/assets/fonts/instrument-serif-italic-latin.woff2', new URL('../public/assets/fonts/instrument-serif-italic-latin.woff2', import.meta.url)],
+]);
+export const localAssets = {
+  async fetch(request) {
+    const file = localAssetFiles.get(new URL(request.url).pathname);
+    if (!file) return new Response(null, { status: 404 });
+    if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { allow: 'GET, HEAD' } });
+    let bytes;
+    try { bytes = await readFile(file); }
+    catch { return new Response(null, { status: 404 }); }
+    return new Response(request.method === 'HEAD' ? null : bytes, { headers: {
+      'content-type': file.pathname.endsWith('.woff2') ? 'font/woff2' : 'image/png',
+      'content-length': String(bytes.byteLength),
+    } });
+  },
+};
+
 export function makeServer(env = {}) {
+  const localEnv = { ASSETS: localAssets, ...env };
   return createServer((incoming, outgoing) => {
     let bytes = 0, overLimit = false;
     const chunks = [];
@@ -28,7 +52,7 @@ export function makeServer(env = {}) {
         const method = incoming.method;
         const body = !['GET', 'HEAD'].includes(method) ? Buffer.concat(chunks) : undefined;
         const request = new Request(new URL(incoming.url, 'http://127.0.0.1'), { method, headers: incoming.headers, body });
-        const response = await worker.fetch(request, env);
+        const response = await worker.fetch(request, localEnv);
         outgoing.writeHead(response.status, Object.fromEntries(response.headers));
         outgoing.end(Buffer.from(await response.arrayBuffer()));
       } catch {

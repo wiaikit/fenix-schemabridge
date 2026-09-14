@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { once } from 'node:events';
 import worker from '../src/worker.mjs';
 import { LIMITS } from '../src/transform.mjs';
-import { makeServer } from '../tools/serve.mjs';
+import { makeServer, localAssets } from '../tools/serve.mjs';
 
 const fixture = async name => JSON.parse(await readFile(new URL(`../fixtures/${name}`, import.meta.url), 'utf8'));
 const mapping = (type = 'string', extra = {}) => ({ source: 'value', target: 'result', type, ...extra });
@@ -304,6 +304,8 @@ test('homepage and its local assets are served as a restricted browser interface
   const csp = response.headers.get('content-security-policy');
   assert.match(csp, /script-src 'self'/);
   assert.match(csp, /connect-src 'self'/);
+  assert.match(csp, /img-src 'self'/);
+  assert.match(csp, /font-src 'self'/);
   assert.match(csp, /frame-ancestors 'none'/);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
   const html = await response.text();
@@ -323,6 +325,36 @@ test('homepage and its local assets are served as a restricted browser interface
     assert.ok(assetText.length > 0);
     assert.doesNotMatch(assetText, /[\u0400-\u04ff]|data-language|language-switch/);
   }
+  const path = '/assets/schema-sculpture.png';
+  const env = { ASSETS: localAssets };
+  const bytes = await readFile(new URL('../public/assets/schema-sculpture.png', import.meta.url));
+  const image = await worker.fetch(new Request(`http://localhost${path}`), env);
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get('content-type'), 'image/png');
+  assert.equal(image.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(Number(image.headers.get('content-length')), bytes.length);
+  assert.deepEqual(Buffer.from(await image.arrayBuffer()), bytes);
+  assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  const head = await worker.fetch(new Request(`http://localhost${path}`, { method: 'HEAD' }), env);
+  assert.equal(head.status, 200);
+  assert.equal(Number(head.headers.get('content-length')), bytes.length);
+  assert.equal((await head.arrayBuffer()).byteLength, 0);
+  const unsupported = await worker.fetch(new Request(`http://localhost${path}`, { method: 'POST' }), env);
+  assert.equal(unsupported.status, 405);
+  assert.equal(unsupported.headers.get('allow'), 'GET, HEAD');
+  assert.equal((await worker.fetch(new Request(`http://localhost${path}`))).status, 503);
+  for (const font of ['instrument-sans-latin.woff2', 'instrument-serif-latin.woff2', 'instrument-serif-italic-latin.woff2']) {
+    const response = await worker.fetch(new Request(`http://localhost/assets/fonts/${font}`), env);
+    assert.equal(response.status, 200, font);
+    assert.equal(response.headers.get('content-type'), 'font/woff2');
+    const bytes = Buffer.from(await response.arrayBuffer());
+    assert.equal(bytes.subarray(0, 4).toString(), 'wOF2');
+    assert.deepEqual(bytes, await readFile(new URL(`../public/assets/fonts/${font}`, import.meta.url)));
+  }
+  for (const denied of ['/src/worker.mjs', '/package.json', '/.env', '/assets/../../package.json', '/assets/unknown.png']) {
+    assert.equal((await worker.fetch(new Request(`http://localhost${denied}`), env)).status, 404, denied);
+    assert.equal((await localAssets.fetch(new Request(`http://localhost${denied}`))).status, 404, denied);
+  }
 });
 
 test('independent requests do not retain record state', async () => {
@@ -332,7 +364,7 @@ test('independent requests do not retain record state', async () => {
 });
 
 test('all local page links and fragments resolve to available resources', async () => {
-  const env = { REVIEW_COMMIT: '1234567890abcdef1234567890abcdef12345678', PROJECT_SLUG: 'fenix-schemabridge' };
+  const env = { REVIEW_COMMIT: '1234567890abcdef1234567890abcdef12345678', PROJECT_SLUG: 'fenix-schemabridge', ASSETS: localAssets };
   const bodies = new Map();
   for (const path of ['/', '/docs', '/status']) {
     const response = await worker.fetch(new Request(`http://localhost${path}`), env);
@@ -390,6 +422,15 @@ test('local HTTP adapter exposes the real handler and body limit on loopback', a
   t.after(() => { server.closeAllConnections(); server.close(); });
   const base = `http://127.0.0.1:${server.address().port}`;
   assert.equal((await fetch(`${base}/health`)).status, 503);
+  assert.equal((await fetch(`${base}/.well-known/xagent-verification.json`)).status, 503);
+  const illustration = await fetch(`${base}/assets/schema-sculpture.png`);
+  assert.equal(illustration.status, 200);
+  assert.equal(illustration.headers.get('content-type'), 'image/png');
+  assert.deepEqual(Buffer.from(await illustration.arrayBuffer()), await readFile(new URL('../public/assets/schema-sculpture.png', import.meta.url)));
+  const illustrationHead = await fetch(`${base}/assets/schema-sculpture.png`, { method: 'HEAD' });
+  assert.equal(illustrationHead.status, 200);
+  assert.equal((await illustrationHead.arrayBuffer()).byteLength, 0);
+  assert.equal((await fetch(`${base}/package.json`)).status, 404);
   const response = await fetch(`${base}/v1/transform`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload('7', 'integer')) });
   assert.deepEqual((await response.json()).data, [{ result: 7 }]);
   const large = await fetch(`${base}/v1/transform`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: ' '.repeat(32769) });

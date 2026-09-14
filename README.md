@@ -16,7 +16,7 @@ npm run build
 
 Wrangler 4.131.1 is an exact development dependency; `package-lock.json` records its transitive dependencies and integrity hashes. `npm ci` installs that locked toolchain from the official npm registry. The build uses the installed local Wrangler, writes `dist/cloudflare/`, and exits without publishing or requiring a Cloudflare login. Keep `package.json` and `package-lock.json` together when copying the source.
 
-The locked toolchain was checked locally with Node.js 24.16.0 and npm 11.13.0: `npm ci` succeeded, all 32 existing tests passed, and the dry-run build reported 64.28 KiB / 18.39 KiB gzip. All 91 resolved package entries use `https://registry.npmjs.org/` and carry integrity hashes. These checks did not publish a deployment or verify public availability.
+The earlier lockfile release was checked locally with Node.js 24.16.0 and npm 11.13.0: `npm ci` succeeded, all 32 existing tests passed, and its dry-run build reported 64.28 KiB / 18.39 KiB gzip. All 91 resolved package entries use `https://registry.npmjs.org/` and carry integrity hashes. Those measurements describe the earlier release, not the later visual assets; repeat the commands above to check the current source.
 
 The application itself has no runtime dependencies. Its tests, demo and loopback server can also run with Node alone, without installing the development toolchain:
 
@@ -157,7 +157,7 @@ The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaiki
 
 After `npm ci`, `npm run build` uses the locally installed Wrangler 4.131.1 and its locked dependencies to bundle the Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
 
-The production configuration binds only `schemabridge.wiaikit.com`; the existing root website and other account projects are separate. For an independent deployment, choose your own Worker name and replace the custom domain in `wrangler.jsonc` with a domain you control, or remove `routes` to use your own `workers.dev` address. Review and commit your resulting source before publishing.
+The production configuration binds only `schemabridge.wiaikit.com`; the existing root website and other account projects are separate. It deploys the illustration and locally hosted fonts from `public/` through the `ASSETS` binding. The Worker runs before static assets and only permits the four named PNG/WOFF2 resources; repository files and other paths are not exposed. Keep `public/`, including its font notices, with the source when building or deploying. See [ASSETS.md](ASSETS.md) for provenance and licenses. For an independent deployment, choose your own Worker name and replace the custom domain in `wrangler.jsonc` with a domain you control, or remove `routes` to use your own `workers.dev` address. Review and commit your resulting source before publishing.
 
 Install the locked toolchain with `npm ci`, then authenticate the installed official Wrangler CLI in your own account. With the reviewed checkout clean, deploy from PowerShell as follows. `CLOUDFLARE_ACCOUNT_ID` must identify the intended account; credentials belong in Wrangler's supported credential store or a private environment variable, never in source.
 
@@ -179,6 +179,8 @@ The public API has no application authentication or per-client rate limiter. It 
 - `src/transform.mjs`: schema checks, CSV parser and conversion logic.
 - `src/worker.mjs`: bounded HTTP body reading, route handling and commit responses.
 - `src/openapi.mjs`: the API description served by the Worker.
+- `public/assets/`: the original bridge illustration and three self-hosted webfonts, with font licenses and source metadata. Browser styling uses no external font server.
+- `ASSETS.md`: current visual-asset provenance and third-party font notices.
 - `fixtures/`: synthetic requests and expected CSV result.
 - `tools/`: offline demo and loopback development adapter.
 - `tools/workerd-smoke.mjs`: real HTTP checks against a separately started local Wrangler server.

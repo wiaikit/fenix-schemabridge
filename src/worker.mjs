@@ -4,6 +4,12 @@ import { homepageHtml, homepageCss, homepageJs } from './homepage.mjs';
 import { docsHtml, statusHtml, docsCss, statusJs } from './docs.mjs';
 
 const encoder = new TextEncoder();
+const binaryAssetPaths = new Set([
+  '/assets/schema-sculpture.png',
+  '/assets/fonts/instrument-sans-latin.woff2',
+  '/assets/fonts/instrument-serif-latin.woff2',
+  '/assets/fonts/instrument-serif-italic-latin.woff2',
+]);
 const routes = new Map([
   ['/', 'GET'], ['/v1', 'GET'],
   ['/assets/app.css', 'GET'], ['/assets/app.js', 'GET'],
@@ -19,7 +25,7 @@ function pageAsset(body, contentType) {
     'cache-control': 'no-store',
     'x-content-type-options': 'nosniff',
     'referrer-policy': 'no-referrer',
-    'content-security-policy': "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+    'content-security-policy': "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   } });
 }
 
@@ -84,6 +90,16 @@ export default {
   async fetch(request, env = {}) {
     try {
       const path = new URL(request.url).pathname;
+      if (binaryAssetPaths.has(path)) {
+        if (!['GET', 'HEAD'].includes(request.method)) return json({ ok: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Unsupported HTTP method.' } }, 405, { allow: 'GET, HEAD' });
+        if (typeof env.ASSETS?.fetch !== 'function') return json({ ok: false, error: { code: 'ASSET_UNAVAILABLE', message: 'The page asset is not configured.' } }, 503);
+        const asset = await env.ASSETS.fetch(request);
+        const headers = new Headers(asset.headers);
+        headers.set('x-content-type-options', 'nosniff');
+        headers.set('cache-control', 'no-cache');
+        headers.set('referrer-policy', 'no-referrer');
+        return new Response(request.method === 'HEAD' ? null : asset.body, { status: asset.status, statusText: asset.statusText, headers });
+      }
       const method = routes.get(path);
       if (!method) return json({ ok: false, error: { code: 'NOT_FOUND', message: 'Unknown API route.' } }, 404);
       if (request.method !== method) return json({ ok: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Unsupported HTTP method.' } }, 405, { allow: method });
