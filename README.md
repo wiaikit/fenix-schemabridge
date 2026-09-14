@@ -6,7 +6,19 @@ This project implements the SchemaBridge idea for X-Agent Open Innovation. Deplo
 
 ## Run locally
 
-Node.js 22 or newer is required. No dependency installation is needed. From this directory:
+Node.js 22 or newer and npm are required for the development toolchain. From this directory, install the exact dependencies in the committed lockfile, run the tests, and create a local dry-run bundle:
+
+```text
+npm ci --registry=https://registry.npmjs.org/
+npm test
+npm run build
+```
+
+Wrangler 4.131.1 is an exact development dependency; `package-lock.json` records its transitive dependencies and integrity hashes. `npm ci` installs that locked toolchain from the official npm registry. The build uses the installed local Wrangler, writes `dist/cloudflare/`, and exits without publishing or requiring a Cloudflare login. Keep `package.json` and `package-lock.json` together when copying the source.
+
+The locked toolchain was checked locally with Node.js 24.16.0 and npm 11.13.0: `npm ci` succeeded, all 32 existing tests passed, and the dry-run build reported 64.28 KiB / 18.39 KiB gzip. All 91 resolved package entries use `https://registry.npmjs.org/` and carry integrity hashes. These checks did not publish a deployment or verify public availability.
+
+The application itself has no runtime dependencies. Its tests, demo and loopback server can also run with Node alone, without installing the development toolchain:
 
 ```text
 node --test
@@ -126,11 +138,11 @@ The required health/proof shapes and source package above follow the [official s
 
 `wrangler.jsonc` is a configuration starting point for Cloudflare Workers. The runtime entry uses standard Worker Request/Response APIs; the Node-only files under `tools/` and `test/` are not imported by it. On 12 September, the official Wrangler **4.131.1** ran this entry in local workerd and passed **29 HTTP smoke checks**. No runtime compatibility fix was needed. Cloudflare Free's **10 ms CPU limit**, continuous availability, contest eligibility and any payout require separate verification; successful local checks do not establish them. Local request timings do not measure Workers CPU time. [Cloudflare limits](https://developers.cloudflare.com/workers/platform/limits/).
 
-To repeat the local workerd check, start the pinned CLI in one terminal, then run the smoke script in another. These commands use the local runtime with remote bindings disabled; no login or public deployment is needed. The first command may download the official npm package to the npm cache. Confirm the two selected ports are free before starting.
+To repeat the local workerd check, first run `npm ci` as shown above, then start the installed local CLI in one terminal and the smoke script in another. These commands use the local runtime with remote bindings disabled; no login or public deployment is needed. Confirm the two selected ports are free before starting.
 
 ```powershell
 $env:WRANGLER_SEND_METRICS = 'false'
-npm.cmd exec --yes --package=wrangler@4.131.1 -- wrangler dev --local --ip 127.0.0.1 --port 8789 --inspector-ip 127.0.0.1 --inspector-port 9234 --show-interactive-dev-session=false
+npm.cmd run wrangler -- dev --local --ip 127.0.0.1 --port 8789 --inspector-ip 127.0.0.1 --inspector-port 9234 --show-interactive-dev-session=false
 ```
 
 ```text
@@ -143,17 +155,17 @@ The smoke script only permits an HTTP origin on `127.0.0.1` and expects unconfig
 
 The production address is [schemabridge.wiaikit.com](https://schemabridge.wiaikit.com/). The homepage explains the service and offers a live CSV example in English. The example uses four fixed mappings; edit its CSV and run it to see the actual API response as a table. A general schema editor is not included. The developer links open the readable [API guide](https://schemabridge.wiaikit.com/docs) and [live status page](https://schemabridge.wiaikit.com/status). Machine endpoints continue to return JSON: [API index](https://schemabridge.wiaikit.com/v1), [health](https://schemabridge.wiaikit.com/health), [deployment proof](https://schemabridge.wiaikit.com/.well-known/xagent-verification.json), and [OpenAPI document](https://schemabridge.wiaikit.com/openapi.json). All use the same Cloudflare custom domain.
 
-`npm run build` uses the pinned official Wrangler 4.131.1 package to bundle the Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
+After `npm ci`, `npm run build` uses the locally installed Wrangler 4.131.1 and its locked dependencies to bundle the Worker modules into `dist/cloudflare/` with `--dry-run`. It does not publish or require account credentials. Generated output and local credentials are excluded from Git.
 
 The production configuration binds only `schemabridge.wiaikit.com`; the existing root website and other account projects are separate. For an independent deployment, choose your own Worker name and replace the custom domain in `wrangler.jsonc` with a domain you control, or remove `routes` to use your own `workers.dev` address. Review and commit your resulting source before publishing.
 
-Authenticate the official Wrangler CLI in your own account. With the reviewed checkout clean, deploy from PowerShell as follows. `CLOUDFLARE_ACCOUNT_ID` must identify the intended account; credentials belong in Wrangler's supported credential store or a private environment variable, never in source.
+Install the locked toolchain with `npm ci`, then authenticate the installed official Wrangler CLI in your own account. With the reviewed checkout clean, deploy from PowerShell as follows. `CLOUDFLARE_ACCOUNT_ID` must identify the intended account; credentials belong in Wrangler's supported credential store or a private environment variable, never in source.
 
 ```powershell
 $reviewCommit = (git rev-parse --verify 'HEAD^{commit}').Trim()
 if (git status --porcelain) { throw 'Commit reviewed changes before deploying.' }
 $env:WRANGLER_SEND_METRICS = 'false'
-npm.cmd exec --yes --package=wrangler@4.131.1 -- wrangler deploy --var "REVIEW_COMMIT:$reviewCommit" --var 'PROJECT_SLUG:fenix-schemabridge'
+npm.cmd run wrangler -- deploy --var "REVIEW_COMMIT:$reviewCommit" --var 'PROJECT_SLUG:fenix-schemabridge'
 ```
 
 Supply both variables on every release: dashboard-only values can be overwritten by Wrangler. The SHA is kept outside the source it identifies. After deployment, reconcile the Cloudflare version with the reviewed checkout and independently check health, proof and fixture responses. A configured SHA alone does not prove that matching code was uploaded. See [Cloudflare Custom Domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/) and [Wrangler configuration](https://developers.cloudflare.com/workers/wrangler/configuration/).
